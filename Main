@@ -70,5 +70,110 @@ public static String accountStatement(int userId, int userType)
 		
 		User Id: 4 || JJ@CSIS.UL	  Amnt Due €37		*/
 		
+=====
+======
+======
+=====
+import java.time.*;
+import java.time.format.*;
+import javax.swing.*;
+public class dateLoop2
+{
+    public static void main(String[] args)
+	{
+	     String d1 = menuBox("Enter the first date you want to view the dates between.\nIn the format dd/MM/yyyy");
+		 String d2 = menuBox("Enter the second date to view the availability between.\nIn the format dd/MM/yyyy");
+		 try{
+		 boolean check = isValidDate(d1);
+		 while(check == false)
+		 {
+		     String date = menuBox("Please enter a valid date for the first date again:\nFormat(DD/MM/YYYY)");
+			 check = isValidDate(date);
+		 }
 		
-		
+		 check = isValidDate(d2);
+		 while(check == false)
+		 {
+		     String date = menuBox("Please enter a valid date for the second date again:\nFormat(DD/MM/YYYY)");
+			 check = isValidDate(d2);
+		 }
+		 }
+		 catch(Exception e){}
+		 
+		 // need to check is the first date before the second one and how many iterations of my loop to store in the array
+		     
+                 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                 LocalDate date = LocalDate.parse(d1, formatter);
+		 LocalDate date2 = LocalDate.parse(d2, formatter);
+		 
+		 int dateDifference = date.compareTo(date2);
+		 
+		 /// compare to -- different way of using it 
+		 int ff = Math.abs(dateDifference); 
+		 
+		 /// only want to limit to a week in difference as anything greater will be too much and break the JOptionPane
+		 System.out.println(ff + " date diff ");
+		 
+		 
+		 String[] names = new String[ff];
+		 // looping over the two dates to get the options for the user
+		 LocalDate temp = date;
+		 String output;
+		 int count = 0;
+		 while (temp.isBefore(date2))
+		 {
+		     temp = temp.plusDays(1);
+		     output = temp.format(formatter);
+			 names[count] = output;
+			 count++;
+		 }
+		 
+		 // user chooses date from the dropDown
+		 String dateChoice = dropDown(names, "Choose a date to view");
+                 LocalDate date777 = LocalDate.parse(dateChoice,formatter);
+         		  
+	}
+	
+	public static boolean isValidDate(String date)
+	{
+		try
+		{
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+			LocalDate test = LocalDate.parse(date, formatter);
+			System.out.println(" TRUE" + test);
+			return true;
+		}
+		catch(Exception e)
+		{
+			return false;
+		}
+	}
+	
+	public static String dropDown(String[] options, String dialogText)
+	{
+		String selection = "";
+		if (options.length != 0)
+		{
+			selection = (String)JOptionPane.showInputDialog(null, dialogText, "Input", 1, null, options, options[0]);
+		}
+		return selection;
+	}
+	
+	
+	
+	public static String menuBox(String options)
+	{
+		String input="";
+		try
+		{
+			input=JOptionPane.showInputDialog(null,options);
+			return input;
+		}
+		catch(Exception e)
+		{
+		JOptionPane.showMessageDialog(null,"Error: no String entered");
+		return menuBox(options);
+		}
+	}
+}
+
