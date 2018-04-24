@@ -1,397 +1,74 @@
-import java.io.*;
-import javax.swing.*;
-import java.util.*;
-
-public class main
-{
-	
-	final static String userFileName="Users.txt";
-	final static String facilityFileName="Facilities.txt";
-	final static String bookingFileName="Bookings.txt";
-	private static int currentID;
- 	private static int userType;
-	private static ArrayList<User> users		  = new ArrayList<User>();
-	private static ArrayList<Facility> facilities = new ArrayList<Facility>();
-	private static ArrayList<Booking> bookings 	  = new ArrayList<Booking>();
- 
-	
-	public static void main(String [] args)
+public static String accountStatement(int userId, int userType) 
 	{
-		String [] red=loadInfo("Users.txt");
-		restoreUserData(red);
-		System.out.println(users.get(0).userToString());
-		System.out.println(users.get(1).getEmail()+ "LN24");
-		System.out.println(users.get(2).getEmail()+ "LN24");
+	    // Want to return a String output that contains the amount due by each user - this output is depending on whether a admin or a user calls the method  
+	    double amountDue = 0.0;
+		String userEmail = "";
+		Currency curr = Currency.getInstance("EUR");						 
+ 		String symbol = curr.getSymbol();
+		for (int j = 0;j<users.size();j++)
+		{
+			if (users.get(j).getUserId() == userId)
+				userEmail = users.get(j).getEmail();
+		}
+	    String statement = ("User ID: "+userId + "    Email: " + userEmail +"    Amount Due: "+symbol+amountDue+"\n");
+		String statement2 = ("User ID: " +userId+  "    Email: "+ userEmail );
+         for (int i = 0 ; i < bookings.size(); i++ )
+	     {
+             if (bookings.get(i).getUserId() == userId)
+		     {
+	             int facilityID = bookings.get(i).getFacilityId();
+		             for (int y = 0; i < facilities.size();y++)
+                     {
+	                     if (facilities.get(y).getFacilityId() == facilityID)
+			             {
+			                 if (userType == 1)  // whats returned to a admin
+			                 {
+			                     if (bookings.get(i).getPaymentStatus() == false)
+	     	                     {
+			                         amountDue += facilities.get(y).getPricePerHour();                     
+                                     statement = "User ID: "+userId + "    Email: " + userEmail + "    Amount Due: "+symbol+ ""+ amountDue+"\n"; /// returned to normal user !!!???!!!!									
+                                     return(statement);
+						         }
+                             }
+			                 else  /// user type 2 returned to a ordinary user
+			                 {
+			                     boolean ff =  (bookings.get(i).getPaymentStatus() == false );
+      				             if (ff)
+				                 {
+				                     amountDue += facilities.get(y).getPricePerHour();
+						             statement2 += ( facilities.get(y).getFacilityName() + " " + symbol+""+facilities.get(y).getPricePerHour()  + "  Paid Status: " + ff +"\n");	 
+						             
+									 System.out.println("UserTpe2 :: Amount Due: " + amountDue + " state: " + statement);	 
+				                 }
+						 
+				     //statement += ( facilities.get(y).getFacilityName() + " " + symbol+""+facilities.get(y).getPricePerHour()  + "  Paid Status: " + ff +"\n");				    
+			                 }
+		                 }
+                     }
+		     }				
+		 } 
+	     statement2 += ("\nAmount Due:     " + amountDue);
+	
 		
-
-		/*createNewUser();
-		createNewUser();
-				
-			//	System.out.println(users.get(0).getEmail() + "LN23");
-			//	System.out.println(users.get(1).getEmail()+ "LN24");
-		createNewUser();
-		for(int i = 0;i<users.size();i++)
-	{
-			System.out.println(users.get(i).getEmail());
+	
+		System.out.println("Ret " + statement);
+	    return statement2;
 	}
-	//	System.out.println(users.get(0).getEmail() +"LN26");
-		//System.out.println(users.get(1).getEmail() +"LN27");
-		//System.out.println(users.get(2).getEmail() +"LN28");
-		*/
-	}
-
-	public static void adminMenu()
-	{
-		String [] initialOptions = { "Register User", "Facility Menu", "Record Payments", "View Account Statements" };
-		String [] subOptions	 = {"Add Facility","View Facility Availability", "View Facility Bookings", "Remove Facility", "Decommission Facility", "Recommission Facility","Make Booking"};
-	        boolean main = true;
-		int x = 0;
-		while(main && x==0||x==1||x==2||x==3)  // && not null 
-		{	
-		    x = optionBoxs(initialOptions,"Choose an option");
-		    int y = 0;
-		    int z = 0;
+	
+	/*  IF UserType 2		
 		
-		    switch (x)
-		    {
-			    case 0: createNewUser();
-		        break;
-			    case 1: y = optionBoxs(subOptions,"Choose an option");
-					switch (y)
-					{
-						case 0: createNewFacility();
-						break;
-						case 1: //Facility Availability
-						break;
-						case 2:	//View Facility Bookings		 
-						break;
-						case 3: //Remove Facility
-						break;
-						case 4: //Decommission Facility
-						break;
-						case 5: //Recommission Facility
-						break;
-						case 6: //Make Booking
-						break;
-					}
-                break;
-				case 2: //Record Payments;
-				break;
-				case 3: //View Account Statements;
-				break;
-			}
-		}
-	}
-	
-	public static void userMenu()
-	{
-		String [] initialOptions = { "View Bookings", "View Account Statement"};
-	    boolean main = true;
-		int x = 0;
-		while (main && x==0||x==1||x==2||x==3)  // && not null 
-		{	
-		    x = optionBoxs(initialOptions,"Choose an option");
-		    int y = 0;
-		    switch (x)
-		    {
-			    case 0: //View Bookings
-		        break;
-			    case 1: //View Account Statement
-                break;				
-			}
-		}	
-	}
-	
-	
-	
-	
-
-  public static String generatePassword()
-	{
-		boolean isValidPassword 	= false;
-		int passwordLength			= (int)((Math.random()*3)+8);
-		int positionOfCharacter;
-		String password				= "";
-		String pattern				= "(?=.*?\\d)(?=.*?[a-zA-Z])(?=.*?[^\\w]).{8,}";
-		String possibleCharacters	= "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghiklmnopqrstuvwxyz1234567890!£$%^&*()_+=@;.#~/?<>:'-";
-		while(!isValidPassword)
-		{
-			for(int i=0;i<passwordLength;i++)
-			{
-				positionOfCharacter	= (int)(Math.random()*possibleCharacters.length()-1);
-				password			= password+possibleCharacters.substring(positionOfCharacter,positionOfCharacter+1);
-			}
-			if(password.matches(pattern))
-				isValidPassword = true;
-			else
-				password = "";
-		}
-		return password;
-	}
-  
-	public static String menuBox(String options)
-	{
-		String input="";
-		try
-		{
-			input = JOptionPane.showInputDialog(null,options);
-			return input;
-		}
-		catch(Exception e)
-		{
-		JOptionPane.showMessageDialog(null,"Error: no String entered");
-		return menuBox(options);
-		}
-	}
-	
-	public static int menuBoxInt(String options)
-	{
-		String input="";
-		int inputAsInt=0;
-		try
-		{
-			input=JOptionPane.showInputDialog(null,options);
-			inputAsInt=Integer.parseInt(input);
-			return inputAsInt;
-		}
-		catch(NumberFormatException e)
-		{
-		JOptionPane.showMessageDialog(null,"Error:Input is not a number entered");
-		return menuBoxInt(options);
-		}
-	}
-	
-	public static void createNewUser()
-	{
-		String email	= menuBox("Please enter an email:");
-		while (!(validEmail(email)))
-		{
-			email 		= menuBox("Please enter a valid email:");
-			validEmail(email);
-		}
-		while (nameExists(email))
-		{
-			email 		= menuBox("Email already registered.\nPlease enter another email");
-			nameExists(email);
-		}
-
-		String password	= generatePassword();
-		int userType	= 2;
-		int userId 		= users.size()+1;
+		User Id : 4 || JJ@CSIS.UL
+		Church Room   €100     Paid
+ 		Tea Room       €25   Unpaid
+		Room 3         €12   Unpaid
 		
-		User aUser;
-		aUser 			= new User(userId, email, password, userType);
-		users.add(aUser);
-		String info		= aUser.userToString();
-		writeFile(info,userFileName);
-	}
-	
-	
-	public static void writeFile(String input, String fileName)
-    {
-		try
-	    {
-            FileWriter aFileWriter = new FileWriter(fileName,true);
-            PrintWriter out 	   = new PrintWriter(aFileWriter);
-	    	out.print(input);
-            out.println();
-            out.close();
-            aFileWriter.close();		
-	    }
-	    catch(Exception e)
-	    {}
-    }
-	
-
-	public static int optionBoxs(String[] options,String whatYouWantItToSay)
-	{
-        int result = JOptionPane.showOptionDialog(null, whatYouWantItToSay, "League Manager", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
-        return result;
-	}
-	/**
-	  * Searches a file for a given string in a given position and regenerates the file without the line
-	  * Copies every line from the file except the specified line and writes them to a temp file
-	  * The original file is then deleted and the temp file is renamed to the name of the original file
-	  * Input: Takes the filename, the string item to search for, and its position in a line
-	  **/
-	public static void removeLineFromFile(String fileName, String itemInLineToDel, int pos)
-	{
-		try 
-		{
-		    String[] fileElements;
-			String line = "";
-			File inFile = new File(fileName);
-			if (!inFile.isFile()) 
-			{
-				System.out.println("Parameter is not an existing file");
-				return;
-			}
-			File tempFile 	  = new File("temp.txt");
-			BufferedReader br = new BufferedReader(new FileReader(inFile));
-			PrintWriter pw 	  = new PrintWriter(new FileWriter(tempFile));
-			while ((line = br.readLine()) != null) 
-			{
-				fileElements = line.split(","); 
-				if (!fileElements[pos].equals(itemInLineToDel)) 
-				{
-				pw.println(line);
-				pw.flush();
-				}
-			}
-			pw.close();
-			br.close();
-			//Delete the original file
-			if (!inFile.delete()) 
-			{
-			System.out.println("Could not delete file");
-			return;
-			} 
-			//Rename the new file to the filename the original file had.
-			if (!tempFile.renameTo(inFile)) 
-			{
-				System.out.println("Could not rename file");
-				return;
-			}
-       } 
-		catch (FileNotFoundException ex) 
-		{
-          ex.printStackTrace();
-        } 
-		catch (IOException ex) 
-		{
-         ex.printStackTrace();
-        }
-	}
+		Amount Due:            €37
 		
-	public static boolean nameExists(String email)
-	{
-		boolean found = false;
-		for (int i = 0;i< users.size();i++)
-		{
-			if (users.get(i).getEmail().equals(email))
-			{
-				found = true;
-				return found;
-			}
-		}
-		return found;
-	}
-	
-	
-	
-	
-	
-	
-	
-	
-	/**
-	  * Checks if an inputted string is a valid email address by comparing it to
-	  * a simple email pattern
-	  * Input: Takes an email string
-	  * Output: Returns a true boolean value if the email matches the pattern and 
-	  * returns false if it does not
-	  **/
-	public static boolean validEmail(String email)
-	{
-		boolean isValid = false; 
-		String pattern  = ("^[a-zA-Z0-9]+@[a-zA-Z0-9]+(.[a-zA-Z]{2,})$");
+		========
 		
-		if (email.matches(pattern))
-			isValid = true;
+		IF UserType 1
 		
-		return isValid;
-	}
-
-public static void createNewFacility()
-	{
-		String [] options={"True","False"};
-		String facilityName=menuBox("Please enter a facilityName:");
-		double pricePerHour=menuBoxInt("please enter a price per hour:");
-		String date=menuBox("Please enter a date:");
-		int facilityId=facilities.size()+1;
-		int whichChoice=optionBoxs(options,"Select availability");
-		boolean availability;
+		User Id: 4 || JJ@CSIS.UL	  Amnt Due €37		*/
 		
-		if(whichChoice==0)
-			availability=true;
-		else
-			availability=false;
 		
-		Facility newFacility=new Facility(facilityId,facilityName,pricePerHour,availability);
-		newFacility.setDecommissionedUntilDate(date);
-		facilities.add(newFacility);
-		String info=newFacility.facilityToString();
-		writeFile(info,facilityFileName);
-	}
-	
-	/*public static String[] readFile(String textFile)
-    	{
-			String [] change={""};
-			
-		try
-		 {
-	        FileReader reader=new FileReader(textFile);
-			Scanner in=new Scanner(reader);
-			while(in.hasNext())
-			{    
-		        String fileText=in.nextLine();
-		        change= fileText.split(",");
-				
-			}
-			in.close();
-			reader.close();	
-		 }
-		 catch (Exception e)
-		 {}
 		
-		return change;
-	}*/
-	public static String readFile(String textFile)
-	{
-		String fileText="";
-		String x="";
-		try
-		{
-		FileReader reader=new FileReader(textFile);
-		Scanner in=new Scanner(reader);
-		while(in.hasNext())
-		{
-			x=in.nextLine();
-			fileText=fileText+x+",";
-		}
-		in.close();
-		reader.close();
-		}
-		catch(Exception e)
-		{}
-		return fileText;
-	}
-	
-
-public static String[] loadInfo(String fileName)
-	{
-		String [] info;
-		String lol="";
-		lol=readFile(fileName);
-		info=lol.split(",");
-		return info;
-	}
-	public static void restoreUserData(String[] arrayOfUser)
-	{
-		System.out.println(arrayOfUser.length);
-		for(int i=0;i<(arrayOfUser.length);i=i+4)
-		{
-			String userId=arrayOfUser[i];
-			int x= Integer.parseInt(userId);
-			String email=arrayOfUser[i+1];
-			String password=arrayOfUser[i+2];
-			String usertypes=arrayOfUser[i+3];
-			int y= Integer.parseInt(usertypes);
-			
-			User aUser;
-			aUser 			= new User(x, email, password, y);
-			users.add(aUser);
-		}
-	}
-	
-}
